@@ -146,7 +146,7 @@ export BOT_PORT=3002         # Bot server HTTP port
 ### 3. Authenticate with CL1 (cloud mode)
 
 ```bash
-cloudflared access login cl1-2544-144.device.cloud.corticallabs-test.com
+cloudflared access login cl1-xxxx-xxx.device.cloud.corticallabs-test.com
 ```
 
 ## Running
