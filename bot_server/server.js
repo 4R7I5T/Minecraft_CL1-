@@ -19,8 +19,8 @@ const BotManager = require('./bot_manager');
 
 const PORT = parseInt(process.env.PORT || '3002', 10);
 const MC_HOST = process.env.MC_HOST || '127.0.0.1';
-const MC_PORT = parseInt(process.env.MC_PORT || '64418', 10);
-const MC_VERSION = process.env.MC_VERSION || '1.20.4';
+const MC_PORT = parseInt(process.env.MC_PORT || '25565', 10);
+const MC_VERSION = process.env.MC_VERSION || '1.21.4';
 const STATE_BROADCAST_HZ = 10;
 
 const app = express();
@@ -85,6 +85,25 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', bots: manager.botCount });
 });
 
+// Get and consume pending chat messages for a bot
+app.get('/chat/:botId', (req, res) => {
+  const bot = manager.getBot(req.params.botId);
+  if (!bot) {
+    return res.status(404).json({ error: 'Bot not found' });
+  }
+  const messages = bot.consumeChat();
+  res.json({ messages });
+});
+
+// Get inventory for a bot
+app.get('/inventory/:botId', (req, res) => {
+  const bot = manager.getBot(req.params.botId);
+  if (!bot) {
+    return res.status(404).json({ error: 'Bot not found' });
+  }
+  res.json({ inventory: bot.inventory });
+});
+
 // --- WebSocket ---
 
 wss.on('connection', (ws) => {
@@ -132,12 +151,11 @@ const broadcastInterval = setInterval(() => {
 
 // --- Lifecycle ---
 
-server.listen(PORT, () => {
+server.listen(PORT, '127.0.0.1', () => {
   console.log(`Minecraft CL1 bot server listening on port ${PORT}`);
   console.log(`Minecraft server: ${MC_HOST}:${MC_PORT} (${MC_VERSION})`);
 
-  // Spawn default bot
-  manager.spawnBot('default');
+  // No auto-spawn — bots are spawned by the creative orchestrator
 });
 
 process.on('SIGINT', () => {
